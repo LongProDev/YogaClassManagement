@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Yoga Class Management</string>
+    <string name="search_hint">Search Classes</string>
+    <string name="search_button">Search</string>
+    <string name="error_empty_field">This field cannot be empty.</string>
+    <string name="error_invalid_input">Invalid input, please try again.</string>
+    <string name="class_not_found">No classes found matching your search criteria.</string>
+    <string name="class_capacity">Capacity: %1$d</string>
+    <string name="class_duration">Duration: %1$s minutes</string>
+    <string name="class_price">Price: %1$s</string>
+    <string name="class_teacher">Teacher: %1$s</string>
+    <string name="class_description">Description: %1$s</string>
+    <string-array name="search_types">
+        <item>Teacher</item>
+        <item>Date</item>
+        <item>Day of Week</item>
+    </string-array>
+</resources>
