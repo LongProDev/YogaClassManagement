@@ -1,4 +1,4 @@
-*.iml
+git push -u origin main*.iml
 .gradle
 .node_modules
 /local.properties
