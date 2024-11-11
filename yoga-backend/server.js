@@ -26,7 +26,7 @@ db.on('error', (error) => console.error(error));
 db.once('open', () => console.log('Connected to Database'));
 
 // Start server
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3666;
 app.listen(port, () => {
     console.log(`Server is running on port ${port}`);
 });
