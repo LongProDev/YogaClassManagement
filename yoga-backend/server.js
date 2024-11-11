@@ -16,9 +16,9 @@ app.use('/api/yoga-classes', yogaClassesRouter);
 app.use('/api/class-instances', classInstancesRouter);
 
 // Database connection
-mongoose.connect(process.env.MONGODB_URI, {
-    useUnifiedTopology: true
-});
+mongoose.connect(process.env.MONGODB_URI)
+    .then(() => console.log('Connected to Database'))
+    .catch((error) => console.error('Database connection error:', error));
 
 const db = mongoose.connection;
 db.on('error', (error) => console.error(error));
