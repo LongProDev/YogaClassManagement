@@ -24,4 +24,10 @@
         android:layout_height="wrap_content"
         android:text="Search Classes" />
 
+    <Button
+        android:id="@+id/btnSync"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Sync Data" />
+
 </LinearLayout>
