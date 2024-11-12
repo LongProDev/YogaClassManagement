@@ -24,6 +24,10 @@ const db = mongoose.connection;
 db.on('error', (error) => console.error(error));
 db.once('open', () => console.log('Connected to Database'));
 
+app.get('/', (req, res) => {
+    res.send('Welcome to the Yoga Class Management');
+});
+
 // Start server
 const port = process.env.PORT || 3666;
 app.listen(port, () => {
