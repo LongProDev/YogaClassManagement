@@ -28,6 +28,8 @@ public class CloudSyncManager {
     public boolean isNetworkAvailable() {
         ConnectivityManager connectivityManager = (ConnectivityManager)
                 context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        if (connectivityManager == null) return false;
+        
         NetworkInfo activeNetworkInfo = connectivityManager.getActiveNetworkInfo();
         return activeNetworkInfo != null && activeNetworkInfo.isConnected();
     }
@@ -42,16 +44,29 @@ public class CloudSyncManager {
             try {
                 // Sync yoga classes
                 List<YogaClass> localClasses = dbHelper.getAllYogaClasses();
+                if (localClasses == null) {
+                    callback.onError("Failed to retrieve local classes");
+                    return;
+                }
+
                 for (YogaClass yogaClass : localClasses) {
-                    syncYogaClass(yogaClass);
+                    if (yogaClass != null) {
+                        syncYogaClass(yogaClass);
+                    }
                 }
 
                 // Sync class instances
                 for (YogaClass yogaClass : localClasses) {
-                    List<YogaClassInstance> instances =
-                            dbHelper.getClassInstancesForClass(yogaClass.getId());
-                    for (YogaClassInstance instance : instances) {
-                        syncClassInstance(instance);
+                    if (yogaClass != null) {
+                        List<YogaClassInstance> instances =
+                                dbHelper.getClassInstancesForClass(yogaClass.getId());
+                        if (instances != null) {
+                            for (YogaClassInstance instance : instances) {
+                                if (instance != null) {
+                                    syncClassInstance(instance);
+                                }
+                            }
+                        }
                     }
                 }
 
@@ -63,32 +78,34 @@ public class CloudSyncManager {
     }
 
     private void syncYogaClass(YogaClass yogaClass) throws Exception {
+        if (yogaClass == null) throw new Exception("Invalid yoga class data");
+
         retrofit2.Response<YogaClass> response;
         if (yogaClass.getId() == 0) {
-            // New class, create it
             response = apiService.createClass(yogaClass).execute();
         } else {
-            // Existing class, update it
             response = apiService.updateClass(yogaClass.getId(), yogaClass).execute();
         }
 
-        if (!response.isSuccessful()) {
-            throw new Exception("Failed to sync yoga class");
+        if (response == null || !response.isSuccessful() || response.body() == null) {
+            throw new Exception("Failed to sync yoga class: " + 
+                (response != null ? response.code() : "null response"));
         }
     }
 
     private void syncClassInstance(YogaClassInstance instance) throws Exception {
+        if (instance == null) throw new Exception("Invalid class instance data");
+
         retrofit2.Response<YogaClassInstance> response;
         if (instance.getId() == 0) {
-            // New instance, create it
             response = apiService.createInstance(instance).execute();
         } else {
-            // Existing instance, update it
             response = apiService.updateInstance(instance.getId(), instance).execute();
         }
 
-        if (!response.isSuccessful()) {
-            throw new Exception("Failed to sync class instance");
+        if (response == null || !response.isSuccessful() || response.body() == null) {
+            throw new Exception("Failed to sync class instance: " + 
+                (response != null ? response.code() : "null response"));
         }
     }
 
