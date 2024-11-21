@@ -17,13 +17,13 @@ import java.util.List;
 import java.util.Locale;
 
 public class YogaClassInstance {
-    private long id;
-    private long yogaClassId;
+    private String id;
+    private String yogaClassId;
     private String date;
     private String teacher;
     private String additionalComments;
 
-    public YogaClassInstance(long yogaClassId, String date, String teacher, String additionalComments) {
+    public YogaClassInstance(String yogaClassId, String date, String teacher, String additionalComments) {
         this.yogaClassId = yogaClassId;
         this.date = date;
         this.teacher = teacher;
@@ -31,9 +31,9 @@ public class YogaClassInstance {
     }
 
     // Getters and setters
-    public long getId() { return id; }
-    public void setId(long id) { this.id = id; }
-    public long getYogaClassId() { return yogaClassId; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
+    public String getYogaClassId() { return yogaClassId; }
     public String getDate() { return date; }
     public String getTeacher() { return teacher; }
     public String getAdditionalComments() { return additionalComments; }

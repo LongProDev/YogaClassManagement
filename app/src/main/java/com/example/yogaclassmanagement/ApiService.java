@@ -12,10 +12,10 @@ public interface ApiService {
     Call<YogaClass> createClass(@Body YogaClass yogaClass);
 
     @PUT("yoga-classes/{id}")
-    Call<YogaClass> updateClass(@Path("id") long id, @Body YogaClass yogaClass);
+    Call<YogaClass> updateClass(@Path("id") String id, @Body YogaClass yogaClass);
 
     @DELETE("yoga-classes/{id}")
-    Call<Void> deleteClass(@Path("id") long id);
+    Call<Void> deleteClass(@Path("id") String id);
 
     @GET("class-instances")
     Call<List<YogaClassInstance>> getAllInstances();
@@ -24,8 +24,5 @@ public interface ApiService {
     Call<YogaClassInstance> createInstance(@Body YogaClassInstance instance);
 
     @PUT("class-instances/{id}")
-    Call<YogaClassInstance> updateInstance(@Path("id") long id, @Body YogaClassInstance instance);
-
-    @DELETE("class-instances/{id}")
-    Call<Void> deleteInstance(@Path("id") long id);
+    Call<YogaClassInstance> updateInstance(@Path("id") String id, @Body YogaClassInstance instance);
 }

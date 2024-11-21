@@ -68,8 +68,8 @@ public class AddClassActivity extends AppCompatActivity {
                 etDescription.getText().toString().trim()
         );
 
-        long id = dbHelper.addYogaClass(yogaClass);
-        if (id != -1) {
+        String id = dbHelper.addYogaClass(yogaClass);
+        if (id != null) {
             Toast.makeText(this, "Yoga class saved successfully", Toast.LENGTH_SHORT).show();
             finish();
         } else {

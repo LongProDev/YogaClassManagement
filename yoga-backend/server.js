@@ -15,10 +15,24 @@ app.use(express.json());
 app.use('/api/yoga-classes', yogaClassesRouter);
 app.use('/api/class-instances', classInstancesRouter);
 
+// Add after your routes and before app.listen()
+app.use((err, req, res, next) => {
+    console.error(err.stack);
+    res.status(500).json({ 
+        message: 'Internal Server Error',
+        error: err.message 
+    });
+});
+
 // Database connection
 mongoose.connect(process.env.MONGODB_URI)
-    .then(() => console.log('Connected to Database'))
-    .catch((error) => console.error('Database connection error:', error));
+    .then(() => {
+        console.log('Connected to MongoDB');
+        console.log('Database URL:', process.env.MONGODB_URI.replace(/\/\/([^:]+):([^@]+)@/, '//***:***@')); // Hide credentials
+    })
+    .catch((error) => {
+        console.error('MongoDB connection error:', error);
+    });
 
 const db = mongoose.connection;
 db.on('error', (error) => console.error(error));

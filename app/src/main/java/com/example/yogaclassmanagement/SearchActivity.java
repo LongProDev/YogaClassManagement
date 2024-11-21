@@ -83,11 +83,10 @@ public class SearchActivity extends AppCompatActivity implements SearchResultsAd
     }
 
     @Override
-    public void onItemClick(long classId) {
+    public void onItemClick(String classId) {
         // Show class details
         Cursor classDetails = dbHelper.getClassWithInstances(classId);
         if (classDetails != null && classDetails.moveToFirst()) {
-            // You can create a dialog or start a new activity to show details
             Toast.makeText(this, "Class selected: " + classId, Toast.LENGTH_SHORT).show();
             classDetails.close();
         }

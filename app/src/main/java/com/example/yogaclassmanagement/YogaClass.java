@@ -3,7 +3,7 @@ package com.example.yogaclassmanagement;
 import java.io.Serializable;
 
 public class YogaClass {
-    private long id;
+    private String id;
     private String dayOfWeek;
     private String time;
     private int capacity;
@@ -25,8 +25,8 @@ public class YogaClass {
     }
 
     // Getters and Setters
-    public long getId() { return id; }
-    public void setId(long id) { this.id = id; }
+    public String getId() { return id; }
+    public void setId(String id) { this.id = id; }
     public String getDayOfWeek() { return dayOfWeek; }
     public String getTime() { return time; }
     public int getCapacity() { return capacity; }

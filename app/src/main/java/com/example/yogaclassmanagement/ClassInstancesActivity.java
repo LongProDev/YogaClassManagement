@@ -1,6 +1,7 @@
 package com.example.yogaclassmanagement;
 
 import android.app.DatePickerDialog;
+import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -18,7 +19,7 @@ import java.util.List;
 import java.util.Locale;
 
 public class ClassInstancesActivity extends AppCompatActivity {
-    private long classId;
+    private String classId;
     private DatabaseHelper dbHelper;
     private RecyclerView recyclerView;
     private Button btnAddInstance;
@@ -28,8 +29,8 @@ public class ClassInstancesActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_class_instances);
 
-        classId = getIntent().getLongExtra("class_id", -1);
-        if (classId == -1) {
+        classId = getIntent().getStringExtra("class_id");
+        if (classId == null) {
             finish();
             return;
         }
@@ -104,7 +105,7 @@ public class ClassInstancesActivity extends AppCompatActivity {
         return true;
     }
 
-    private void showDeleteInstanceDialog(long instanceId) {
+    private void showDeleteInstanceDialog(String instanceId) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Instance")
                 .setMessage("Are you sure you want to delete this class instance?")

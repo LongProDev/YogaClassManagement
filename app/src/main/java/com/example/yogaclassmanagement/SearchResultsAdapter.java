@@ -15,7 +15,7 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
     private OnItemClickListener listener;
 
     public interface OnItemClickListener {
-        void onItemClick(long classId);
+        void onItemClick(String classId);
     }
 
     public SearchResultsAdapter(OnItemClickListener listener) {
@@ -47,7 +47,7 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
             String date = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_DATE));
             String time = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_TIME));
             double price = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_PRICE));
-            final long classId = cursor.getLong(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_ID));
+            final String classId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_ID));
 
             // Format price
             NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.UK);
