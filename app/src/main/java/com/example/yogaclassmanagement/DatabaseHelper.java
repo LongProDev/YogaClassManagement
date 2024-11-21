@@ -7,9 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
+import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 1;
+    private final Context context;
 
     public static final String DATABASE_NAME = "yoga_class_management.db";
     public static final String TABLE_YOGA_CLASSES = "yoga_classes";
@@ -50,6 +52,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
+        this.context = context;
     }
 
     @Override
@@ -79,6 +82,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_DESCRIPTION, yogaClass.getDescription());
 
         long id = db.insert(TABLE_YOGA_CLASSES, null, values);
+        if (id != -1) {
+            triggerSync(context);
+        }
         db.close();
         return id;
     }
@@ -94,6 +100,9 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         values.put(KEY_COMMENTS, instance.getAdditionalComments());
 
         long id = db.insert(TABLE_CLASS_INSTANCES, null, values);
+        if (id != -1) {
+            triggerSync(context);
+        }
         db.close();
         return id;
     }
@@ -115,8 +124,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getInt(cursor.getColumnIndexOrThrow(KEY_DURATION)),
                         cursor.getDouble(cursor.getColumnIndexOrThrow(KEY_PRICE)),
                         cursor.getString(cursor.getColumnIndexOrThrow(KEY_TYPE)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(KEY_DESCRIPTION))
-                );
+                        cursor.getString(cursor.getColumnIndexOrThrow(KEY_DESCRIPTION)));
                 yogaClass.setId(cursor.getLong(cursor.getColumnIndexOrThrow(KEY_ID)));
                 classes.add(yogaClass);
             } while (cursor.moveToNext());
@@ -134,7 +142,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " WHERE " + KEY_YOGA_CLASS_ID + " = ?";
 
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery(selectQuery, new String[]{String.valueOf(yogaClassId)});
+        Cursor cursor = db.rawQuery(selectQuery, new String[] { String.valueOf(yogaClassId) });
 
         if (cursor.moveToFirst()) {
             do {
@@ -142,8 +150,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                         cursor.getLong(cursor.getColumnIndexOrThrow(KEY_YOGA_CLASS_ID)),
                         cursor.getString(cursor.getColumnIndexOrThrow(KEY_DATE)),
                         cursor.getString(cursor.getColumnIndexOrThrow(KEY_TEACHER)),
-                        cursor.getString(cursor.getColumnIndexOrThrow(KEY_COMMENTS))
-                );
+                        cursor.getString(cursor.getColumnIndexOrThrow(KEY_COMMENTS)));
                 instance.setId(cursor.getLong(cursor.getColumnIndexOrThrow(KEY_ID)));
                 instances.add(instance);
             } while (cursor.moveToNext());
@@ -158,18 +165,20 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public void deleteYogaClass(long classId) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_CLASS_INSTANCES, KEY_YOGA_CLASS_ID + " = ?",
-                new String[]{String.valueOf(classId)});
+                new String[] { String.valueOf(classId) });
         db.delete(TABLE_YOGA_CLASSES, KEY_ID + " = ?",
-                new String[]{String.valueOf(classId)});
+                new String[] { String.valueOf(classId) });
         db.close();
+        triggerSync(context);
     }
 
     // Delete a class instance
     public void deleteClassInstance(long instanceId) {
         SQLiteDatabase db = this.getWritableDatabase();
         db.delete(TABLE_CLASS_INSTANCES, KEY_ID + " = ?",
-                new String[]{String.valueOf(instanceId)});
+                new String[] { String.valueOf(instanceId) });
         db.close();
+        triggerSync(context);
     }
 
     public Cursor searchByTeacher(String teacherName) {
@@ -177,7 +186,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String query = "SELECT DISTINCT yc.*, ci.* FROM " + TABLE_YOGA_CLASSES + " yc " +
                 "INNER JOIN " + TABLE_CLASS_INSTANCES + " ci ON yc." + KEY_ID + " = ci." + KEY_YOGA_CLASS_ID +
                 " WHERE ci." + KEY_TEACHER + " LIKE ?";
-        return db.rawQuery(query, new String[]{"%" + teacherName + "%"});
+        return db.rawQuery(query, new String[] { "%" + teacherName + "%" });
     }
 
     public Cursor searchByDate(String date) {
@@ -185,14 +194,14 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String query = "SELECT DISTINCT yc.*, ci.* FROM " + TABLE_YOGA_CLASSES + " yc " +
                 "INNER JOIN " + TABLE_CLASS_INSTANCES + " ci ON yc." + KEY_ID + " = ci." + KEY_YOGA_CLASS_ID +
                 " WHERE ci." + KEY_DATE + " LIKE ?";
-        return db.rawQuery(query, new String[]{"%" + date + "%"});
+        return db.rawQuery(query, new String[] { "%" + date + "%" });
     }
 
     public Cursor searchByDayOfWeek(String day) {
         SQLiteDatabase db = this.getReadableDatabase();
         String query = "SELECT * FROM " + TABLE_YOGA_CLASSES +
                 " WHERE " + KEY_DAY + " LIKE ?";
-        return db.rawQuery(query, new String[]{"%" + day + "%"});
+        return db.rawQuery(query, new String[] { "%" + day + "%" });
     }
 
     // Method to get full class details including instances
@@ -201,6 +210,24 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         String query = "SELECT yc.*, ci.* FROM " + TABLE_YOGA_CLASSES + " yc " +
                 "LEFT JOIN " + TABLE_CLASS_INSTANCES + " ci ON yc." + KEY_ID + " = ci." + KEY_YOGA_CLASS_ID +
                 " WHERE yc." + KEY_ID + " = ?";
-        return db.rawQuery(query, new String[]{String.valueOf(classId)});
+        return db.rawQuery(query, new String[] { String.valueOf(classId) });
+    }
+
+    private void triggerSync(Context context) {
+        CloudSyncManager syncManager = new CloudSyncManager(context);
+        if (syncManager.isNetworkAvailable()) {
+            syncManager.syncAllData(new CloudSyncManager.SyncCallback() {
+                @Override
+                public void onSuccess() {
+                    // Sync completed silently
+                }
+
+                @Override
+                public void onError(String message) {
+                    // Log error but don't disturb user
+                    Log.e("DatabaseHelper", "Auto-sync failed: " + message);
+                }
+            });
+        }
     }
 }

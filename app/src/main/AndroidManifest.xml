@@ -27,6 +27,10 @@
         <activity
             android:name=".SearchActivity"
             android:label="Search Classes"
+            android:exported="false"/>
+        <activity
+            android:name=".SyncActivity"
+            android:label="Sync Data"
             android:exported="false" />
 
     </application>
