@@ -112,44 +112,35 @@ public class CloudSyncManager {
 
     private void syncYogaClass(YogaClass yogaClass) throws Exception {
         if (yogaClass == null) throw new Exception("Invalid yoga class data");
-        if (!isValidObjectId(yogaClass.getId())) {
-            Log.d("CloudSync", "Invalid ID format, creating new class");
-            executeWithRetry(() -> {
-                retrofit2.Response<YogaClass> response = apiService.createClass(yogaClass).execute();
-                if (!response.isSuccessful()) {
-                    String errorBody = response.errorBody() != null ? 
-                        response.errorBody().string() : "Unknown error";
-                    throw new Exception("Server error: " + response.code() + " - " + errorBody);
-                }
-                if (response.body() != null && response.body().getId() != null) {
-                    yogaClass.setId(response.body().getId());
-                }
-                return null;
-            });
-            return;
-        }
-
+        
         executeWithRetry(() -> {
             retrofit2.Response<YogaClass> response;
             try {
-                Log.d("CloudSync", "Attempting to update class: " + yogaClass.getId());
-                response = apiService.updateClass(yogaClass.getId(), yogaClass).execute();
-                
-                if (response.code() == 404) {
-                    Log.d("CloudSync", "Class not found, creating new: " + yogaClass.getType());
+                if (!isValidObjectId(yogaClass.getId())) {
+                    Log.d("CloudSync", "Creating new class: " + yogaClass.getType());
                     response = apiService.createClass(yogaClass).execute();
+                } else {
+                    Log.d("CloudSync", "Attempting to update class: " + yogaClass.getId());
+                    response = apiService.updateClass(yogaClass.getId(), yogaClass).execute();
+                    
+                    if (response.code() == 404) {
+                        Log.d("CloudSync", "Class not found, creating new");
+                        response = apiService.createClass(yogaClass).execute();
+                    }
                 }
 
                 if (!response.isSuccessful()) {
                     String errorBody = response.errorBody() != null ? 
                         response.errorBody().string() : "Unknown error";
-                    Log.e("CloudSync", "Server error: " + response.code() + " - " + errorBody);
                     throw new Exception("Server error: " + response.code() + " - " + errorBody);
                 }
 
+                // Update local database with server ID
                 if (response.body() != null && response.body().getId() != null) {
-                    yogaClass.setId(response.body().getId());
-                    Log.d("CloudSync", "Successfully synced class with ID: " + yogaClass.getId());
+                    String serverId = response.body().getId();
+                    yogaClass.setId(serverId);
+                    dbHelper.updateYogaClassId(yogaClass.getId(), serverId);
+                    Log.d("CloudSync", "Updated local class ID to: " + serverId);
                 }
             } catch (Exception e) {
                 Log.e("CloudSync", "Error syncing class: " + e.getMessage());

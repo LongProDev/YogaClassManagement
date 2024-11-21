@@ -221,4 +221,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 " WHERE yc." + KEY_ID + " = ?";
         return db.rawQuery(query, new String[]{classId});
     }
+
+    public void updateYogaClassId(String oldId, String newId) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            // Begin transaction
+            db.beginTransaction();
+            
+            // Update yoga class ID
+            ContentValues classValues = new ContentValues();
+            classValues.put(KEY_ID, newId);
+            db.update(TABLE_YOGA_CLASSES, classValues, KEY_ID + "=?", new String[]{oldId});
+            
+            // Update related class instances
+            ContentValues instanceValues = new ContentValues();
+            instanceValues.put(KEY_YOGA_CLASS_ID, newId);
+            db.update(TABLE_CLASS_INSTANCES, instanceValues, KEY_YOGA_CLASS_ID + "=?", new String[]{oldId});
+            
+            // Mark transaction successful
+            db.setTransactionSuccessful();
+        } finally {
+            // End transaction
+            db.endTransaction();
+            db.close();
+        }
+    }
 }
