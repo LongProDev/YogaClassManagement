@@ -16,4 +16,9 @@
         <item>Date</item>
         <item>Day of Week</item>
     </string-array>
+    <string-array name="yoga_class_types">
+        <item>Flow Yoga</item>
+        <item>Aerial Yoga</item>
+        <item>Family Yoga</item>
+    </string-array>
 </resources>
