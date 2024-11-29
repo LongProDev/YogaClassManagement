@@ -13,15 +13,23 @@ import java.util.List;
 
 public class ClassInstanceAdapter extends RecyclerView.Adapter<ClassInstanceAdapter.ViewHolder> {
     private List<YogaClassInstance> instances;
-    private OnDeleteClickListener deleteClickListener;
+    private OnDeleteClickListener deleteListener;
+    private OnEditClickListener editListener;
 
     public interface OnDeleteClickListener {
         void onDeleteClick(YogaClassInstance instance);
     }
 
-    public ClassInstanceAdapter(List<YogaClassInstance> instances, OnDeleteClickListener deleteClickListener) {
+    public interface OnEditClickListener {
+        void onEditClick(YogaClassInstance instance);
+    }
+
+    public ClassInstanceAdapter(List<YogaClassInstance> instances, 
+                              OnDeleteClickListener deleteListener,
+                              OnEditClickListener editListener) {
         this.instances = instances;
-        this.deleteClickListener = deleteClickListener;
+        this.deleteListener = deleteListener;
+        this.editListener = editListener;
     }
 
     @NonNull
@@ -35,17 +43,12 @@ public class ClassInstanceAdapter extends RecyclerView.Adapter<ClassInstanceAdap
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         YogaClassInstance instance = instances.get(position);
-
         holder.tvDate.setText(instance.getDate());
-        holder.tvTeacher.setText("Teacher: " + instance.getTeacher());
-        if (instance.getAdditionalComments() != null && !instance.getAdditionalComments().isEmpty()) {
-            holder.tvComments.setVisibility(View.VISIBLE);
-            holder.tvComments.setText("Comments: " + instance.getAdditionalComments());
-        } else {
-            holder.tvComments.setVisibility(View.GONE);
-        }
+        holder.tvTeacher.setText(instance.getTeacher());
+        holder.tvComments.setText(instance.getAdditionalComments());
 
-        holder.btnDelete.setOnClickListener(v -> deleteClickListener.onDeleteClick(instance));
+        holder.btnEdit.setOnClickListener(v -> editListener.onEditClick(instance));
+        holder.btnDelete.setOnClickListener(v -> deleteListener.onDeleteClick(instance));
     }
 
     @Override
@@ -55,13 +58,14 @@ public class ClassInstanceAdapter extends RecyclerView.Adapter<ClassInstanceAdap
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvDate, tvTeacher, tvComments;
-        Button btnDelete;
+        Button btnEdit, btnDelete;
 
         ViewHolder(View view) {
             super(view);
             tvDate = view.findViewById(R.id.tvDate);
             tvTeacher = view.findViewById(R.id.tvTeacher);
             tvComments = view.findViewById(R.id.tvComments);
+            btnEdit = view.findViewById(R.id.btnEdit);
             btnDelete = view.findViewById(R.id.btnDelete);
         }
     }

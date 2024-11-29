@@ -13,6 +13,7 @@ public class YogaClassAdapter extends RecyclerView.Adapter<YogaClassAdapter.View
     private List<YogaClass> classes;
     private OnClassClickListener classClickListener;
     private OnDeleteClickListener deleteClickListener;
+    private OnEditClickListener editClickListener;
 
     public interface OnClassClickListener {
         void onClassClick(YogaClass yogaClass);
@@ -22,12 +23,18 @@ public class YogaClassAdapter extends RecyclerView.Adapter<YogaClassAdapter.View
         void onDeleteClick(YogaClass yogaClass);
     }
 
-    public YogaClassAdapter(List<YogaClass> classes,
-                            OnClassClickListener classClickListener,
-                            OnDeleteClickListener deleteClickListener) {
+    public interface OnEditClickListener {
+        void onEditClick(YogaClass yogaClass);
+    }
+
+    public YogaClassAdapter(List<YogaClass> classes, 
+                          OnClassClickListener classClickListener,
+                          OnDeleteClickListener deleteClickListener,
+                          OnEditClickListener editClickListener) {
         this.classes = classes;
         this.classClickListener = classClickListener;
         this.deleteClickListener = deleteClickListener;
+        this.editClickListener = editClickListener;
     }
 
     @NonNull
@@ -41,7 +48,6 @@ public class YogaClassAdapter extends RecyclerView.Adapter<YogaClassAdapter.View
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         YogaClass yogaClass = classes.get(position);
-
         holder.tvType.setText(yogaClass.getType());
         holder.tvDayTime.setText(String.format("%s at %s",
                 yogaClass.getDayOfWeek(), yogaClass.getTime()));
@@ -50,6 +56,7 @@ public class YogaClassAdapter extends RecyclerView.Adapter<YogaClassAdapter.View
 
         holder.btnViewInstances.setOnClickListener(v -> classClickListener.onClassClick(yogaClass));
         holder.btnDelete.setOnClickListener(v -> deleteClickListener.onDeleteClick(yogaClass));
+        holder.btnEdit.setOnClickListener(v -> editClickListener.onEditClick(yogaClass));
     }
 
     @Override
@@ -59,7 +66,7 @@ public class YogaClassAdapter extends RecyclerView.Adapter<YogaClassAdapter.View
 
     static class ViewHolder extends RecyclerView.ViewHolder {
         TextView tvType, tvDayTime, tvDetails;
-        Button btnViewInstances, btnDelete;
+        Button btnViewInstances, btnEdit, btnDelete;
 
         ViewHolder(View view) {
             super(view);
@@ -67,6 +74,7 @@ public class YogaClassAdapter extends RecyclerView.Adapter<YogaClassAdapter.View
             tvDayTime = view.findViewById(R.id.tvDayTime);
             tvDetails = view.findViewById(R.id.tvDetails);
             btnViewInstances = view.findViewById(R.id.btnViewInstances);
+            btnEdit = view.findViewById(R.id.btnEdit);
             btnDelete = view.findViewById(R.id.btnDelete);
         }
     }

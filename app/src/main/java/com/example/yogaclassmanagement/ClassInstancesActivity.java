@@ -54,8 +54,11 @@ public class ClassInstancesActivity extends AppCompatActivity {
 
     private void loadInstances() {
         List<YogaClassInstance> instances = dbHelper.getClassInstancesForClass(classId);
-        ClassInstanceAdapter adapter = new ClassInstanceAdapter(instances,
-                instance -> showDeleteInstanceDialog(instance.getId()));
+        ClassInstanceAdapter adapter = new ClassInstanceAdapter(
+            instances,
+            this::showDeleteInstanceDialog,
+            this::showEditInstance
+        );
         recyclerView.setAdapter(adapter);
     }
 
@@ -127,15 +130,21 @@ public class ClassInstancesActivity extends AppCompatActivity {
         return true;
     }
 
-    private void showDeleteInstanceDialog(String instanceId) {
+    private void showDeleteInstanceDialog(YogaClassInstance instance) {
         new AlertDialog.Builder(this)
                 .setTitle("Delete Instance")
                 .setMessage("Are you sure you want to delete this class instance?")
                 .setPositiveButton("Yes", (dialog, which) -> {
-                    dbHelper.deleteClassInstance(instanceId);
+                    dbHelper.deleteClassInstance(instance.getId());
                     loadInstances();
                 })
                 .setNegativeButton("No", null)
                 .show();
+    }
+
+    private void showEditInstance(YogaClassInstance instance) {
+        Intent intent = new Intent(this, EditClassInstanceActivity.class);
+        intent.putExtra("instance_id", instance.getId());
+        startActivity(intent);
     }
 }

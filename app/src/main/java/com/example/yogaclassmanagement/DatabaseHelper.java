@@ -273,4 +273,62 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         
         return yogaClass;
     }
+
+    public boolean updateYogaClass(YogaClass yogaClass) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_DAY, yogaClass.getDayOfWeek());
+        values.put(KEY_TIME, yogaClass.getTime());
+        values.put(KEY_CAPACITY, yogaClass.getCapacity());
+        values.put(KEY_DURATION, yogaClass.getDuration());
+        values.put(KEY_PRICE, yogaClass.getPrice());
+        values.put(KEY_TYPE, yogaClass.getType());
+        values.put(KEY_DESCRIPTION, yogaClass.getDescription());
+
+        int rowsAffected = db.update(TABLE_YOGA_CLASSES, values, 
+            KEY_ID + " = ?", new String[]{yogaClass.getId()});
+        db.close();
+        
+        return rowsAffected > 0;
+    }
+
+    public YogaClassInstance getClassInstanceById(String instanceId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        YogaClassInstance instance = null;
+        
+        Cursor cursor = db.query(TABLE_CLASS_INSTANCES,
+                null,
+                KEY_ID + "=?",
+                new String[]{instanceId},
+                null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            instance = new YogaClassInstance(
+                    cursor.getString(cursor.getColumnIndexOrThrow(KEY_YOGA_CLASS_ID)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(KEY_DATE)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(KEY_TEACHER)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(KEY_COMMENTS))
+            );
+            instance.setId(instanceId);
+            cursor.close();
+        }
+        
+        return instance;
+    }
+
+    public boolean updateClassInstance(YogaClassInstance instance) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        values.put(KEY_DATE, instance.getDate());
+        values.put(KEY_TEACHER, instance.getTeacher());
+        values.put(KEY_COMMENTS, instance.getAdditionalComments());
+
+        int rowsAffected = db.update(TABLE_CLASS_INSTANCES, values, 
+            KEY_ID + " = ?", new String[]{instance.getId()});
+        db.close();
+        
+        return rowsAffected > 0;
+    }
 }

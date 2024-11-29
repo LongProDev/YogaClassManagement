@@ -27,7 +27,7 @@ public class ViewClassesActivity extends AppCompatActivity {
 
     private void loadYogaClasses() {
         List<YogaClass> classes = dbHelper.getAllYogaClasses();
-        adapter = new YogaClassAdapter(classes, this::onClassClick, this::onDeleteClick);
+        adapter = new YogaClassAdapter(classes, this::onClassClick, this::onDeleteClick, this::onEditClick);
         recyclerView.setAdapter(adapter);
     }
 
@@ -47,5 +47,11 @@ public class ViewClassesActivity extends AppCompatActivity {
                 })
                 .setNegativeButton("No", null)
                 .show();
+    }
+
+    private void onEditClick(YogaClass yogaClass) {
+        Intent intent = new Intent(this, EditYogaClassActivity.class);
+        intent.putExtra("class_id", yogaClass.getId());
+        startActivity(intent);
     }
 }

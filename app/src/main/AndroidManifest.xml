@@ -25,6 +25,12 @@
         <activity android:name=".ViewClassesActivity" />
         <activity android:name=".ClassInstancesActivity" />
         <activity
+            android:name=".EditYogaClassActivity"
+            android:label="Edit Yoga Class"/>
+        <activity
+            android:name=".EditClassInstanceActivity"
+            android:label="Edit Class Instance"/>
+        <activity
             android:name=".SearchActivity"
             android:label="Search Classes"
             android:exported="false"/>
