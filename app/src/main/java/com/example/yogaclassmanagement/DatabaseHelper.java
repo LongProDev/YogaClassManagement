@@ -7,6 +7,11 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import java.util.ArrayList;
 import java.util.List;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
+import android.util.Log;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
     private static final int DATABASE_VERSION = 3;
@@ -198,19 +203,37 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         return db.rawQuery(query, new String[]{"%" + teacherName + "%"});
     }
 
-    public Cursor searchByDate(String date) {
+    public Cursor searchByDate(String searchDate) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT DISTINCT yc.*, ci.* FROM " + TABLE_YOGA_CLASSES + " yc " +
-                "INNER JOIN " + TABLE_CLASS_INSTANCES + " ci ON yc." + KEY_ID + " = ci." + KEY_YOGA_CLASS_ID +
-                " WHERE ci." + KEY_DATE + " LIKE ?";
-        return db.rawQuery(query, new String[]{"%" + date + "%"});
+        
+        // Convert search date to standard format if needed
+        try {
+            SimpleDateFormat inputFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.UK);
+            SimpleDateFormat dbFormat = new SimpleDateFormat("dd/MM/yyyy", Locale.UK);
+            Date date = inputFormat.parse(searchDate);
+            String formattedDate = dbFormat.format(date);
+            
+            String query = "SELECT DISTINCT yc.*, ci.* FROM " + TABLE_YOGA_CLASSES + " yc " +
+                    "INNER JOIN " + TABLE_CLASS_INSTANCES + " ci ON yc." + KEY_ID + " = ci." + KEY_YOGA_CLASS_ID +
+                    " WHERE ci." + KEY_DATE + " = ?";
+            return db.rawQuery(query, new String[]{formattedDate});
+        } catch (ParseException e) {
+            Log.e("DatabaseHelper", "Date parsing error: " + e.getMessage());
+            return null;
+        }
     }
 
     public Cursor searchByDayOfWeek(String day) {
         SQLiteDatabase db = this.getReadableDatabase();
-        String query = "SELECT * FROM " + TABLE_YOGA_CLASSES +
-                " WHERE " + KEY_DAY + " LIKE ?";
-        return db.rawQuery(query, new String[]{"%" + day + "%"});
+        
+        // Standardize day format (capitalize first letter, rest lowercase)
+        String standardizedDay = day.substring(0, 1).toUpperCase() + 
+                               day.substring(1).toLowerCase();
+        
+        String query = "SELECT DISTINCT yc.*, ci.* FROM " + TABLE_YOGA_CLASSES + " yc " +
+                "LEFT JOIN " + TABLE_CLASS_INSTANCES + " ci ON yc." + KEY_ID + " = ci." + KEY_YOGA_CLASS_ID +
+                " WHERE yc." + KEY_DAY + " = ?";
+        return db.rawQuery(query, new String[]{standardizedDay});
     }
 
     // Method to get full class details including instances

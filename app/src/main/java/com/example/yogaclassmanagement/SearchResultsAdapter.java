@@ -1,17 +1,16 @@
 package com.example.yogaclassmanagement;
 
-import android.database.Cursor;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
-import java.text.NumberFormat;
-import java.util.Locale;
+import java.util.ArrayList;
+import java.util.List;
 
-public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.SearchViewHolder> {
-    private Cursor cursor;
+public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdapter.ViewHolder> {
+    private List<SearchResult> results = new ArrayList<>();
     private OnItemClickListener listener;
 
     public interface OnItemClickListener {
@@ -22,78 +21,37 @@ public class SearchResultsAdapter extends RecyclerView.Adapter<SearchResultsAdap
         this.listener = listener;
     }
 
-    public void updateResults(Cursor newCursor) {
-        if (cursor != null) {
-            cursor.close();
-        }
-        cursor = newCursor;
+    public void updateResults(List<SearchResult> newResults) {
+        this.results = newResults;
         notifyDataSetChanged();
     }
 
     @NonNull
     @Override
-    public SearchViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
         View view = LayoutInflater.from(parent.getContext())
-                .inflate(R.layout.item_search_result, parent, false);
-        return new SearchViewHolder(view);
+                .inflate(android.R.layout.simple_list_item_1, parent, false);
+        return new ViewHolder(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull SearchViewHolder holder, int position) {
-        if (cursor != null && cursor.moveToPosition(position)) {
-            // Get values from cursor
-            String classType = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_TYPE));
-            String teacher = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_TEACHER));
-            String date = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_DATE));
-            String time = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_TIME));
-            double price = cursor.getDouble(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_PRICE));
-            final String classId = cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_ID));
-
-            // Format price
-            NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(Locale.UK);
-            String formattedPrice = currencyFormat.format(price);
-
-            // Set values to views
-            holder.classTypeText.setText(classType);
-            holder.teacherText.setText("Teacher: " + teacher);
-            holder.dateTimeText.setText(String.format("%s at %s", date, time));
-            holder.priceText.setText(formattedPrice);
-
-            // Set click listener
-            holder.itemView.setOnClickListener(v -> {
-                if (listener != null) {
-                    listener.onItemClick(classId);
-                }
-            });
-        }
+    public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
+        SearchResult result = results.get(position);
+        holder.textView.setText(result.getDisplayText());
+        holder.itemView.setOnClickListener(v -> listener.onItemClick(result.getClassId()));
     }
 
     @Override
     public int getItemCount() {
-        return cursor != null ? cursor.getCount() : 0;
+        return results.size();
     }
 
-    @Override
-    public void onDetachedFromRecyclerView(@NonNull RecyclerView recyclerView) {
-        super.onDetachedFromRecyclerView(recyclerView);
-        if (cursor != null) {
-            cursor.close();
-            cursor = null;
-        }
-    }
+    static class ViewHolder extends RecyclerView.ViewHolder {
+        TextView textView;
 
-    static class SearchViewHolder extends RecyclerView.ViewHolder {
-        TextView classTypeText;
-        TextView teacherText;
-        TextView dateTimeText;
-        TextView priceText;
-
-        SearchViewHolder(View itemView) {
-            super(itemView);
-            classTypeText = itemView.findViewById(R.id.classTypeText);
-            teacherText = itemView.findViewById(R.id.teacherText);
-            dateTimeText = itemView.findViewById(R.id.dateTimeText);
-            priceText = itemView.findViewById(R.id.priceText);
+        ViewHolder(View view) {
+            super(view);
+            textView = view.findViewById(android.R.id.text1);
         }
     }
 }

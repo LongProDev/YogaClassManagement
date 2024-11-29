@@ -12,6 +12,12 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import com.google.android.material.textfield.TextInputEditText;
+import com.example.yogaclassmanagement.SearchResultsAdapter;
+import com.example.yogaclassmanagement.SearchResult;
+import com.example.yogaclassmanagement.utils.SearchUtils;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class SearchActivity extends AppCompatActivity implements SearchResultsAdapter.OnItemClickListener {
     private DatabaseHelper dbHelper;
@@ -66,19 +72,72 @@ public class SearchActivity extends AppCompatActivity implements SearchResultsAd
                     cursor = dbHelper.searchByTeacher(query);
                     break;
                 case "Date":
+                    if (!SearchUtils.isValidDate(query)) {
+                        Toast.makeText(this, "Please enter a valid date (dd/MM/yyyy)", 
+                            Toast.LENGTH_SHORT).show();
+                        return;
+                    }
                     cursor = dbHelper.searchByDate(query);
                     break;
                 case "Day of Week":
-                    cursor = dbHelper.searchByDayOfWeek(query);
+                    if (!SearchUtils.isValidDayOfWeek(query)) {
+                        Toast.makeText(this, "Please enter a valid day of the week", 
+                            Toast.LENGTH_SHORT).show();
+                        return;
+                    }
+                    String standardizedDay = SearchUtils.standardizeDayOfWeek(query);
+                    cursor = dbHelper.searchByDayOfWeek(standardizedDay);
                     break;
             }
-            adapter.updateResults(cursor);
+
+            if (cursor != null && cursor.getCount() > 0) {
+                updateSearchResults(cursor);
+            } else {
+                Toast.makeText(this, "No results found", Toast.LENGTH_SHORT).show();
+                adapter.updateResults(new ArrayList<>()); // Clear results
+            }
         } catch (Exception e) {
             Toast.makeText(this, "Error performing search", Toast.LENGTH_SHORT).show();
             e.printStackTrace();
+        } finally {
             if (cursor != null) {
                 cursor.close();
             }
+        }
+    }
+
+    private void performDateSearch(String searchDate) {
+        if (!SearchUtils.isValidDate(searchDate)) {
+            Toast.makeText(this, "Please enter a valid date (dd/MM/yyyy)", 
+                Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        Cursor cursor = dbHelper.searchByDate(searchDate);
+        if (cursor != null && cursor.getCount() > 0) {
+            // Process results
+            updateSearchResults(cursor);
+        } else {
+            Toast.makeText(this, "No classes found for this date", 
+                Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    private void performDaySearch(String searchDay) {
+        if (!SearchUtils.isValidDayOfWeek(searchDay)) {
+            Toast.makeText(this, "Please enter a valid day of the week", 
+                Toast.LENGTH_SHORT).show();
+            return;
+        }
+        
+        String standardizedDay = SearchUtils.standardizeDayOfWeek(searchDay);
+        Cursor cursor = dbHelper.searchByDayOfWeek(standardizedDay);
+        if (cursor != null && cursor.getCount() > 0) {
+            // Process results
+            updateSearchResults(cursor);
+        } else {
+            Toast.makeText(this, "No classes found for this day", 
+                Toast.LENGTH_SHORT).show();
         }
     }
 
@@ -96,5 +155,34 @@ public class SearchActivity extends AppCompatActivity implements SearchResultsAd
     protected void onDestroy() {
         super.onDestroy();
         dbHelper.close();
+    }
+
+    private void updateSearchResults(Cursor cursor) {
+        List<SearchResult> searchResults = new ArrayList<>();
+        
+        if (cursor != null && cursor.moveToFirst()) {
+            do {
+                SearchResult result = new SearchResult(
+                    cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_ID)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_DAY)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_TIME)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_TYPE))
+                );
+                
+                // Add instance details if available
+                if (cursor.getColumnIndex(DatabaseHelper.KEY_DATE) != -1) {
+                    result.setInstanceDate(cursor.getString(
+                        cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_DATE)));
+                    result.setTeacher(cursor.getString(
+                        cursor.getColumnIndexOrThrow(DatabaseHelper.KEY_TEACHER)));
+                }
+                
+                searchResults.add(result);
+            } while (cursor.moveToNext());
+            
+            cursor.close();
+        }
+        
+        adapter.updateResults(searchResults);
     }
 }
