@@ -20,6 +20,7 @@ import java.util.Locale;
 
 public class ClassInstancesActivity extends AppCompatActivity {
     private String classId;
+    private String dayOfWeek;
     private DatabaseHelper dbHelper;
     private RecyclerView recyclerView;
     private Button btnAddInstance;
@@ -36,6 +37,11 @@ public class ClassInstancesActivity extends AppCompatActivity {
         }
 
         dbHelper = new DatabaseHelper(this);
+        
+        YogaClass yogaClass = dbHelper.getYogaClassById(classId);
+        if (yogaClass != null) {
+            dayOfWeek = yogaClass.getDayOfWeek().toUpperCase();
+        }
 
         recyclerView = findViewById(R.id.recyclerView);
         recyclerView.setLayoutManager(new LinearLayoutManager(this));
@@ -86,14 +92,30 @@ public class ClassInstancesActivity extends AppCompatActivity {
                 this,
                 (view, year, month, dayOfMonth) -> {
                     calendar.set(year, month, dayOfMonth);
-                    SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.UK);
-                    etDate.setText(sdf.format(calendar.getTime()));
+                    if (isDayMatch(calendar)) {
+                        SimpleDateFormat sdf = new SimpleDateFormat("dd/MM/yyyy", Locale.UK);
+                        etDate.setText(sdf.format(calendar.getTime()));
+                    } else {
+                        Toast.makeText(this, 
+                            "Please select a " + dayOfWeek + " date", 
+                            Toast.LENGTH_SHORT).show();
+                    }
                 },
                 calendar.get(Calendar.YEAR),
                 calendar.get(Calendar.MONTH),
                 calendar.get(Calendar.DAY_OF_MONTH)
         );
+
+        datePickerDialog.getDatePicker().setMinDate(System.currentTimeMillis() - 1000);
         datePickerDialog.show();
+    }
+
+    private boolean isDayMatch(Calendar selectedDate) {
+        String selectedDayOfWeek = selectedDate.getDisplayName(
+                Calendar.DAY_OF_WEEK, 
+                Calendar.LONG, 
+                Locale.UK).toUpperCase();
+        return selectedDayOfWeek.equals(dayOfWeek.toUpperCase());
     }
 
     private boolean validateInstanceInput(EditText etDate, EditText etTeacher) {

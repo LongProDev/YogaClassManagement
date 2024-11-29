@@ -246,4 +246,31 @@ public class DatabaseHelper extends SQLiteOpenHelper {
             db.close();
         }
     }
+
+    public YogaClass getYogaClassById(String classId) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        YogaClass yogaClass = null;
+        
+        Cursor cursor = db.query(TABLE_YOGA_CLASSES,
+                null,
+                KEY_ID + "=?",
+                new String[]{classId},
+                null, null, null);
+
+        if (cursor != null && cursor.moveToFirst()) {
+            yogaClass = new YogaClass(
+                    cursor.getString(cursor.getColumnIndexOrThrow(KEY_DAY)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(KEY_TIME)),
+                    cursor.getInt(cursor.getColumnIndexOrThrow(KEY_CAPACITY)),
+                    cursor.getInt(cursor.getColumnIndexOrThrow(KEY_DURATION)),
+                    cursor.getDouble(cursor.getColumnIndexOrThrow(KEY_PRICE)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(KEY_TYPE)),
+                    cursor.getString(cursor.getColumnIndexOrThrow(KEY_DESCRIPTION))
+            );
+            yogaClass.setId(classId);
+            cursor.close();
+        }
+        
+        return yogaClass;
+    }
 }
